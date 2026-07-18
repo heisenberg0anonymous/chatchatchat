@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>محادثة المجموعات الآمنة</title>
+    <title>الظلال</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #efeae2; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
         
-        /* شاشة الدخول */
-        .login-card { width: 100%; max-width: 400px; background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); padding: 30px; border-top: 6px solid #00a884; text-align: center; }
+        .login-card { width: 100%; max-width: 400px; background: white; border-radius: 12px; box-shadow: 0 4px 20 rgba(0,0,0,0.1); padding: 30px; border-top: 6px solid #00a884; text-align: center; }
         .login-card h2 { margin-top: 0; color: #00a884; font-size: 24px; margin-bottom: 8px; }
         .login-card p { font-size: 13px; color: #667781; margin-bottom: 25px; line-height: 1.4; }
         .form-group { margin-bottom: 20px; text-align: right; }
@@ -19,10 +18,8 @@
         .login-btn { width: 100%; padding: 13px; background: #00a884; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; transition: background 0.2s; }
         .login-btn:hover { background: #008f72; }
 
-        /* شاشة المحادثة (شبه الواتساب) */
         .chat-container { width: 100%; max-width: 600px; height: 90vh; background: #efeae2; display: flex; flex-direction: column; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-radius: 10px; overflow: hidden; }
         
-        /* رأس المحادثة */
         .chat-header { background-color: #00a884; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; color: white; }
         .header-info { display: flex; align-items: center; gap: 12px; }
         .avatar { width: 40px; height: 40px; background: #008f72; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; }
@@ -31,18 +28,19 @@
         .exit-btn { background: rgba(255,255,255,0.2); color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; }
         .exit-btn:hover { background: rgba(255,255,255,0.3); }
 
-        /* صندوق الرسائل المعزز بخلفية الواتساب النمطية */
         .chat-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-blend-mode: overlay; background-color: #efeae2; }
         
-        /* فقاعات الرسائل */
         .message { max-width: 75%; padding: 8px 12px; border-radius: 8px; font-size: 14.5px; line-height: 1.4; word-break: break-word; box-shadow: 0 1px 1px rgba(0,0,0,0.06); position: relative; display: flex; flex-direction: column; }
         .sent { background-color: #d9fdd3; align-self: flex-start; border-top-right-radius: 0; color: #111b21; }
         .received { background-color: #ffffff; align-self: flex-end; border-top-left-radius: 0; color: #111b21; }
+        
+        .message a { color: #027eb5; text-decoration: none; font-weight: 500; border-bottom: 1px dashed #027eb5; }
+        .message a:hover { color: #015c84; }
+
         .sender-name { font-size: 12px; font-weight: bold; color: #008f72; margin-bottom: 2px; }
         .received .sender-name { color: #53bdeb; }
         .meta { font-size: 10px; color: #667781; align-self: flex-end; margin-top: 4px; }
         
-        /* شريط الكتابة السفلي */
         .input-area { background-color: #f0f2f5; padding: 10px 16px; display: flex; align-items: center; gap: 10px; }
         .input-area input { flex: 1; padding: 11px 15px; border: none; border-radius: 8px; outline: none; font-size: 15px; background-color: white; }
         .send-btn { background: #00a884; color: white; border: none; width: 42px; height: 42px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: bold; transition: transform 0.1s; }
@@ -54,8 +52,8 @@
 <body>
 
 <div class="login-card" id="loginSection">
-    <h2>واتساب جيت هاب</h2>
-    <p>أدخل اسم المجموعة لبدء المحادثة، وسيتم إنشاء مجلد خاص بها بشكل فوري وتلقائي.</p>
+    <h2>الظلال</h2>
+    <p>أدخل اسم المجموعة وبيناتك للبدء.</p>
     
     <div class="form-group">
         <label>اسم المجموعة:</label>
@@ -87,7 +85,7 @@
         <button class="exit-btn" onclick="exitChat()">خروج</button>
     </div>
     
-    <div class="status" id="statusLabel">جاري الاتصال بالمجموعة...</div>
+    <div class="status" id="statusLabel">جاري الاتصال...</div>
     <div class="chat-box" id="chatBox"></div>
     
     <div class="input-area">
@@ -99,11 +97,16 @@
 <script>
     const GH_USER = "heisenberg0anonymous"; 
     const GH_REPO = "chatchatchat"; 
-
+    
     let config = { group: '', token: '', name: '' };
     let fileSha = ""; 
     let messagesList = [];
     let pollInterval = null;
+
+    function linkify(text) {
+        const urlPattern = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+        return text.replace(urlPattern, '<a href="$1" target="_blank">$1</a>');
+    }
 
     function startChat() {
         config.group = document.getElementById('groupName').value.trim().toLowerCase().replace(/ /g, "-");
@@ -111,7 +114,7 @@
         config.token = document.getElementById('ghToken').value.trim();
 
         if(!config.group || !config.name || !config.token) {
-            alert("يرجى إدخال اسم المجموعة، اسمك، وكلمة المرور أولاً!");
+            alert("يرجى إدخال البيانات المطلوبة أولاً!");
             return;
         }
 
@@ -122,7 +125,7 @@
         document.getElementById('userProfile').innerText = `بصفتك: ${config.name}`;
         
         fetchMessages();
-        pollInterval = setInterval(fetchMessages, 4000); // تحديث كل 4 ثوانٍ
+        pollInterval = setInterval(fetchMessages, 4000);
     }
 
     function exitChat() {
@@ -144,7 +147,7 @@
             });
             
             if (res.status === 404) {
-                document.getElementById('statusLabel').innerText = "المجموعة فارغة. أرسل أول رسالة لإنشائها!";
+                document.getElementById('statusLabel').innerText = "المجموعة فارغة. أرسل رسالة للبدء!";
                 return;
             }
 
@@ -159,7 +162,7 @@
             renderMessages();
             document.getElementById('statusLabel').style.display = "none"; 
         } catch (err) {
-            document.getElementById('statusLabel').innerText = "خطأ في الاتصال! تأكد من كلمة السر.";
+            document.getElementById('statusLabel').innerText = "خطأ في الاتصال! تأكد من التوكن أو البيانات.";
             document.getElementById('statusLabel').style.background = "#f8d7da";
         }
     }
@@ -174,9 +177,11 @@
             const isMe = msg.sender === config.name;
             div.className = `message ${isMe ? 'sent' : 'received'}`;
             
+            const processedText = linkify(msg.text);
+            
             div.innerHTML = `
                 ${!isMe ? `<span class="sender-name">${msg.sender}</span>` : ''}
-                <div>${msg.text}</div>
+                <div>${processedText}</div>
                 <span class="meta">${msg.time}</span>
             `;
             chatBox.appendChild(div);
