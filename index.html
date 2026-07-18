@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>واتساب جيت هاب المشفر مدمجاً</title>
+    <title>واتساب جيت هاب المختصر</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #efeae2; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
@@ -52,8 +52,8 @@
 <body>
 
 <div class="login-card" id="loginSection">
-    <h2>واتساب جيت هاب المدمج</h2>
-    <p>مراسلة آمنة بتشفير داخلي بدون مكتبات خارجية، مع ميزة التعبئة التلقائية للبيانات المحفوظة.</p>
+    <h2>واتساب جيت هاب</h2>
+    <p>أدخل اسم المجموعة، اسمك، والجزء الأخير المتبقي من التوكن للدخول.</p>
     
     <div class="form-group">
         <label>اسم المجموعة (اسم المجلد):</label>
@@ -66,13 +66,8 @@
     </div>
     
     <div class="form-group">
-        <label>مفتاح التشفير (رقم سري يربط بينكما لفك الرسائل):</label>
-        <input type="number" id="cryptoKey" placeholder="مثال: 7 (يفضل رقم بين 1 و 25)">
-    </div>
-    
-    <div class="form-group">
-        <label>كلمة السر (GitHub Personal Access Token):</label>
-        <input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+        <label>آخر بضعة أحرف من التوكن (تكملة كلمة السر):</label>
+        <input type="password" id="ghTokenEnd" placeholder="اكتب آخر جزء فقط هنا...">
     </div>
 
     <button class="login-btn" onclick="startChat()">دخول للمحادثة</button>
@@ -94,16 +89,22 @@
     <div class="chat-box" id="chatBox"></div>
     
     <div class="input-area">
-        <input type="text" id="msgInput" placeholder="اكتب رسالة مشفرة..." onkeypress="if(event.key==='Enter') sendMsg()">
+        <input type="text" id="msgInput" placeholder="اكتب رسالة..." onkeypress="if(event.key==='Enter') sendMsg()">
         <button class="send-btn" onclick="sendMsg()">◀</button>
     </div>
 </div>
 
 <script>
+    // ===================================================
+    // ⚙️ الإعدادات المسبقة (تعدلها مرة واحدة فقط):
     const GH_USER = "heisenberg0anonymous"; 
     const GH_REPO = "chatchatchat"; 
     
-    let config = { group: '', token: '', name: '', crypto: 5 };
+    // هنا تطرح أول 75% من التوكن الخاص بك (مثلاً أول 30 حرف وتترك الباقي للمراسل)
+    const GH_TOKEN_START = "ghp_s0e9JNQQyC16aHNrBLK2P69VPZx";
+    // ===================================================
+    
+    let config = { group: '', token: '', name: '' };
     let fileSha = ""; 
     let messagesList = [];
     let pollInterval = null;
@@ -111,8 +112,7 @@
     window.onload = function() {
         if(localStorage.getItem('gh_group')) document.getElementById('groupName').value = localStorage.getItem('gh_group');
         if(localStorage.getItem('gh_name')) document.getElementById('chatName').value = localStorage.getItem('gh_name');
-        if(localStorage.getItem('gh_crypto')) document.getElementById('cryptoKey').value = localStorage.getItem('gh_crypto');
-        if(localStorage.getItem('gh_token')) document.getElementById('ghToken').value = localStorage.getItem('gh_token');
+        if(localStorage.getItem('gh_token_end')) document.getElementById('ghTokenEnd').value = localStorage.getItem('gh_token_end');
     };
 
     function linkify(text) {
@@ -120,51 +120,28 @@
         return text.replace(urlPattern, '<a href="$1" target="_blank">$1</a>');
     }
 
-    function internalCipher(text, shift) {
-        let result = "";
-        for (let i = 0; i < text.length; i++) {
-            let code = text.charCodeAt(i);
-            result += String.fromCharCode(code + shift);
-        }
-        return btoa(unescape(encodeURIComponent(result)));
-    }
-
-    function internalDecipher(cipherText, shift) {
-        try {
-            let decoded = decodeURIComponent(escape(atob(cipherText)));
-            let result = "";
-            for (let i = 0; i < decoded.length; i++) {
-                let code = decoded.charCodeAt(i);
-                result += String.fromCharCode(code - shift);
-            }
-            return result;
-        } catch(e) {
-            return "[رسالة مشفرة - مفتاح فك التشفير غير متطابق]";
-        }
-    }
-
     function startChat() {
         config.group = document.getElementById('groupName').value.trim().toLowerCase().replace(/ /g, "-");
         config.name = document.getElementById('chatName').value.trim();
-        let keyInput = parseInt(document.getElementById('cryptoKey').value.trim());
-        config.crypto = isNaN(keyInput) ? 5 : keyInput;
-        config.token = document.getElementById('ghToken').value.trim();
+        
+        // دمج الجزء الثابت مع الجزء الذي كتبه المستخدم ليتكون التوكن الكامل
+        let tokenEnd = document.getElementById('ghTokenEnd').value.trim();
+        config.token = GH_TOKEN_START + tokenEnd;
 
-        if(!config.group || !config.name || !config.token) {
+        if(!config.group || !config.name || !tokenEnd) {
             alert("يرجى إدخال كافة البيانات المطلوبة!");
             return;
         }
 
         localStorage.setItem('gh_group', config.group);
         localStorage.setItem('gh_name', config.name);
-        localStorage.setItem('gh_crypto', config.crypto);
-        localStorage.setItem('gh_token', config.token);
+        localStorage.setItem('gh_token_end', tokenEnd);
 
         document.getElementById('loginSection').style.display = 'none';
         document.getElementById('chatSection').style.display = 'flex';
         document.getElementById('groupTitle').innerText = config.group;
         document.getElementById('groupAvatar').innerText = config.group.charAt(0).toUpperCase();
-        document.getElementById('userProfile').innerText = `بصفتك: ${config.name} | التشفير الداخلي فعال`;
+        document.getElementById('userProfile').innerText = `بصفتك: ${config.name}`;
         
         fetchMessages();
         pollInterval = setInterval(fetchMessages, 4000);
@@ -206,7 +183,7 @@
             document.getElementById('statusLabel').style.display = "none"; 
         } catch (err) {
             document.getElementById('statusLabel').style.display = "block";
-            document.getElementById('statusLabel').innerText = "خطأ في الاتصال! تأكد من التوكن أو البيانات.";
+            document.getElementById('statusLabel').innerText = "خطأ في الاتصال! تأكد من التوكن المكتوب أو الإعدادات.";
             document.getElementById('statusLabel').style.background = "#f8d7da";
         }
     }
@@ -221,8 +198,7 @@
             const isMe = msg.sender === config.name;
             div.className = `message ${isMe ? 'sent' : 'received'}`;
             
-            const decryptedText = internalDecipher(msg.text, config.crypto);
-            const processedText = linkify(decryptedText);
+            const processedText = linkify(msg.text);
             
             div.innerHTML = `
                 ${!isMe ? `<span class="sender-name">${msg.sender}</span>` : ''}
@@ -243,14 +219,12 @@
         if(!text) return;
 
         document.getElementById('statusLabel').style.display = "block";
-        document.getElementById('statusLabel').innerText = "جاري تشفير وإرسال الرسالة...";
+        document.getElementById('statusLabel').innerText = "جاري إرسال الرسالة...";
         document.getElementById('statusLabel').style.background = "#fff3cd";
-
-        const encryptedText = internalCipher(text, config.crypto);
 
         const newMsg = {
             sender: config.name,
-            text: encryptedText,
+            text: text,
             time: new Date().toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' })
         };
 
@@ -268,7 +242,7 @@
         const base64Content = btoa(utf8Bytes);
 
         const bodyData = {
-            message: `رسالة مشفرة جديدة في مجموعة: ${config.group}`,
+            message: `رسالة جديدة في مجموعة: ${config.group}`,
             content: base64Content
         };
         if (fileSha) bodyData.sha = fileSha;
