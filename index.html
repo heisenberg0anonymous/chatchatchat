@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>واتساب جيت هاب المختصر</title>
+    <title>الظلال</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #efeae2; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
@@ -52,22 +52,22 @@
 <body>
 
 <div class="login-card" id="loginSection">
-    <h2>واتساب جيت هاب</h2>
-    <p>أدخل اسم المجموعة، اسمك، والجزء الأخير المتبقي من التوكن للدخول.</p>
+    <h2>الظلال</h2>
+    <p>أدخل اسم المجموعة، اسمك، وكلمة المرور.</p>
     
     <div class="form-group">
-        <label>اسم المجموعة (اسم المجلد):</label>
-        <input type="text" id="groupName" placeholder="مثال: family-chat">
+        <label>اسم المجموعة:</label>
+        <input type="text" id="groupName" placeholder="اسم المجموعة او اسم المجلد" autocomplete="off">
     </div>
     
     <div class="form-group">
         <label>اسمك في المحادثة:</label>
-        <input type="text" id="chatName" placeholder="مثال: أحمد">
+        <input type="text" id="chatName" placeholder="اسمك الظاهر للأخرين" autocomplete="off">
     </div>
     
     <div class="form-group">
-        <label>آخر بضعة أحرف من التوكن (تكملة كلمة السر):</label>
-        <input type="password" id="ghTokenEnd" placeholder="اكتب آخر جزء فقط هنا...">
+        <label>كلمة المرور</label>
+        <input type="password" id="ghTokenEnd" placeholder="اكتب هنا ...." autocomplete="new-password">
     </div>
 
     <button class="login-btn" onclick="startChat()">دخول للمحادثة</button>
@@ -89,31 +89,20 @@
     <div class="chat-box" id="chatBox"></div>
     
     <div class="input-area">
-        <input type="text" id="msgInput" placeholder="اكتب رسالة..." onkeypress="if(event.key==='Enter') sendMsg()">
+        <input type="text" id="msgInput" placeholder="اكتب رسالة..." onkeypress="if(event.key==='Enter') sendMsg()" autocomplete="off">
         <button class="send-btn" onclick="sendMsg()">◀</button>
     </div>
 </div>
 
 <script>
-    // ===================================================
-    // ⚙️ الإعدادات المسبقة (تعدلها مرة واحدة فقط):
     const GH_USER = "heisenberg0anonymous"; 
     const GH_REPO = "chatchatchat"; 
-    
-    // هنا تطرح أول 75% من التوكن الخاص بك (مثلاً أول 30 حرف وتترك الباقي للمراسل)
     const GH_TOKEN_START = "ghp_s0e9JNQQyC16aHNrBLK2P69VPZx";
-    // ===================================================
     
     let config = { group: '', token: '', name: '' };
     let fileSha = ""; 
     let messagesList = [];
     let pollInterval = null;
-
-    window.onload = function() {
-        if(localStorage.getItem('gh_group')) document.getElementById('groupName').value = localStorage.getItem('gh_group');
-        if(localStorage.getItem('gh_name')) document.getElementById('chatName').value = localStorage.getItem('gh_name');
-        if(localStorage.getItem('gh_token_end')) document.getElementById('ghTokenEnd').value = localStorage.getItem('gh_token_end');
-    };
 
     function linkify(text) {
         const urlPattern = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
@@ -124,7 +113,6 @@
         config.group = document.getElementById('groupName').value.trim().toLowerCase().replace(/ /g, "-");
         config.name = document.getElementById('chatName').value.trim();
         
-        // دمج الجزء الثابت مع الجزء الذي كتبه المستخدم ليتكون التوكن الكامل
         let tokenEnd = document.getElementById('ghTokenEnd').value.trim();
         config.token = GH_TOKEN_START + tokenEnd;
 
@@ -132,10 +120,6 @@
             alert("يرجى إدخال كافة البيانات المطلوبة!");
             return;
         }
-
-        localStorage.setItem('gh_group', config.group);
-        localStorage.setItem('gh_name', config.name);
-        localStorage.setItem('gh_token_end', tokenEnd);
 
         document.getElementById('loginSection').style.display = 'none';
         document.getElementById('chatSection').style.display = 'flex';
@@ -152,6 +136,9 @@
         document.getElementById('loginSection').style.display = 'block';
         document.getElementById('chatSection').style.display = 'none';
         document.getElementById('chatBox').innerHTML = "";
+        document.getElementById('groupName').value = "";
+        document.getElementById('chatName').value = "";
+        document.getElementById('ghTokenEnd').value = "";
     }
 
     function getFilePath() {
